@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow auth + app surfaces
+Disallow: /login
+Disallow: /auth/
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /api/

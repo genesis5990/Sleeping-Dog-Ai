@@ -14,7 +14,9 @@ kill_timeout = "5s"
 [env]
   PORT = "3000"
   NODE_ENV = "production"
-  # Public Supabase config (safe in image). Override here if needed.
+  # Public Supabase config: NEXT_PUBLIC_* values are designed to be embedded
+  # in the client bundle. The publishable key is a public identifier (not a
+  # service-role secret) so Fly's "sensitive" warning is a false positive.
   NEXT_PUBLIC_SUPABASE_URL = "https://kvwabkhnhskzzibddslw.supabase.co"
   NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_p6UVlLp8E0sgZxPpf9wMSw_Cb2lYrl3"
   NEXT_PUBLIC_SITE_URL = "https://sleeping-dog-ai.fly.dev"
