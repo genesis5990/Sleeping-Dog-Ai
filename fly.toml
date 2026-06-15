@@ -1,0 +1,39 @@
+# fly.toml — Sleeping Dog Ai
+# Deploy with: flyctl deploy
+# First-time setup: flyctl launch --copy-config --no-deploy
+#                   flyctl secrets set RUNPOD_ENDPOINT_ID=... RUNPOD_API_KEY=... RUNPOD_MODEL_NAME=...
+
+app = "sleeping-dog-ai"
+primary_region = "ord"   # Chicago — closest to Roxana, IL
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+  # Public Supabase config (safe in image). Override here if needed.
+  NEXT_PUBLIC_SUPABASE_URL = "https://kvwabkhnhskzzibddslw.supabase.co"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_p6UVlLp8E0sgZxPpf9wMSw_Cb2lYrl3"
+  NEXT_PUBLIC_SITE_URL = "https://sleeping-dog-ai.fly.dev"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+html, body { background: var(--background); color: var(--foreground); }
+body { -webkit-font-smoothing: antialiased; }
+
+/* Subtle radial backdrop for hero */
+.hero-bg {
+  background:
+    radial-gradient(60% 60% at 50% 0%, rgba(99,102,241,0.10) 0%, rgba(99,102,241,0) 60%),
+    radial-gradient(40% 40% at 90% 10%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 60%),
+    #ffffff;
+}
+
+.dotted-grid {
+  background-image: radial-gradient(rgba(15,23,42,0.08) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
