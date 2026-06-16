@@ -1,22 +1,24 @@
 # syntax=docker/dockerfile:1.7
-
 # ---------- deps ----------
 FROM node:20-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json* ./
 RUN npm ci
-
 # ---------- build ----------
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Public Supabase config is safe to bake in at build time.
-# RunPod secrets are NOT baked — they're injected at runtime from Fly secrets.
+# NEXT_PUBLIC_* must be present during `next build` so they inline into the client bundle.
+# RunPod secrets are NOT baked here -- they're injected at runtime from Fly secrets.
+ARG NEXT_PUBLIC_SUPABASE_URL=https://kvwabkhnhskzzibddslw.supabase.co
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_p6UVlLp8E0sgZxPpf9wMSw_Cb2lYrl3
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
-
 # ---------- runtime ----------
 FROM node:20-alpine AS runner
 WORKDIR /app
@@ -24,17 +26,14 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
-
+ adduser --system --uid 1001 nextjs
 # Copy the minimal standalone server output plus public/static assets.
 # Ensure ./public exists even if the source tree omits it.
 RUN mkdir -p ./public
 COPY --from=builder /app/public/ ./public/
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
 USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD node server.js
