@@ -139,6 +139,28 @@ export function ChatSurface({
     }
   }
 
+  // ChatSurface is a client component that persists across client-side
+  // navigations (switching threads, starting a new thread, deleting the
+  // active thread) — Next.js does not remount it, it just re-renders with
+  // new props. Without this effect, `messages` would keep showing the
+  // previous thread's content (including after all threads are deleted and
+  // a new one is created) because the useState initializer above only runs
+  // once, on first mount. Re-sync whenever the active thread identity or its
+  // server-loaded messages change.
+  useEffect(() => {
+    setMessages(
+      initialMessages.map((m) => ({
+        id: m.id,
+        dbId: m.id,
+        role: (m.role as UiRole) ?? "assistant",
+        content: m.content,
+      })),
+    );
+    setSavedFileKeys(new Set());
+    setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeThreadId]);
+
   // Auto-scroll on new content.
   useEffect(() => {
     scrollRef.current?.scrollTo({
