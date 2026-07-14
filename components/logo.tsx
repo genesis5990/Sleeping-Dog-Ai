@@ -5,7 +5,7 @@ export function Logo({ className = "h-7 w-auto" }: { className?: string }) {
         viewBox="0 0 40 40"
         fill="none"
         aria-label="Sleeping Dog Ai logo"
-        className="h-7 w-7 text-brand-600"
+        className="h-7 w-7 text-brand-500"
       >
         {/* Resting dog silhouette + Z (sleeping) */}
         <path
@@ -13,7 +13,7 @@ export function Logo({ className = "h-7 w-auto" }: { className?: string }) {
           fill="currentColor"
           opacity="0.9"
         />
-        <circle cx="29" cy="23" r="1.4" fill="white" />
+        <circle cx="29" cy="23" r="1.4" fill="#0a0a0d" />
         <path
           d="M27 8h6l-6 6h6"
           stroke="currentColor"
@@ -23,7 +23,7 @@ export function Logo({ className = "h-7 w-auto" }: { className?: string }) {
         />
       </svg>
       <span className="text-[15px] font-semibold tracking-tight text-slate-900">
-        Sleeping Dog <span className="text-brand-600">Ai</span>
+        Sleeping Dog <span className="text-brand-500">Ai</span>
       </span>
     </span>
   );

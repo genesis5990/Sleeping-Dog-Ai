@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Sleeping Dog Ai — Quiet intelligence for serious teams",
+  title: "Sleeping Dog Ai — Your own AI, on your own infrastructure",
   description:
-    "Sleeping Dog Ai gives your team a calm, focused AI workspace. Multi-tenant by design, secure by default.",
+    "Sleeping Dog Ai runs private LLMs on infrastructure you control. Chat, code, and retrieval-augmented search over your own documents — nothing leaves your RunPod endpoints.",
   openGraph: {
     title: "Sleeping Dog Ai",
     description:
-      "Quiet intelligence for serious teams. A calm, focused AI workspace.",
+      "Your own AI, on your own infrastructure. No third-party model providers.",
     type: "website",
   },
 };
@@ -26,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans text-slate-900">{children}</body>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} dark`}>
+      <body className="font-sans text-slate-100">{children}</body>
     </html>
   );
 }
