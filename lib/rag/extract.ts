@@ -51,10 +51,20 @@ async function extractEmail(buffer: Buffer): Promise<ExtractedDocument> {
 }
 
 async function extractPdf(buffer: Buffer): Promise<ExtractedDocument> {
-  // pdf-parse v2 uses a class-based API (PDFParse) rather than v1's plain
-  // function export. Keep the import lazy so builds without a PDF in the
-  // request path stay fast.
+  // pdf-parse v2 (built on pdfjs-dist) tries to spin up a real worker
+  // thread, then falls back to a "fake worker" that dynamically imports
+  // pdf.worker.mjs by path. Inside a Next.js server bundle that path gets
+  // rewritten to a webpack chunk location the file was never emitted to,
+  // which throws "Setting up fake worker failed" in production even though
+  // it works in local dev. Explicitly pointing PDFParse at the on-disk
+  // worker file (resolved via pdf-parse's own `worker` subpath export)
+  // sidesteps the fake-worker path entirely. This must run before the
+  // first PDFParse instantiation — see pdf-parse's troubleshooting docs:
+  // https://github.com/mehmet-kozan/pdf-parse/blob/main/docs/troubleshooting.md
   const { PDFParse } = await import("pdf-parse");
+  const { getPath } = await import("pdf-parse/worker");
+  PDFParse.setWorker(getPath());
+
   const parser = new PDFParse({ data: new Uint8Array(buffer) });
   try {
     const result = await parser.getText();
