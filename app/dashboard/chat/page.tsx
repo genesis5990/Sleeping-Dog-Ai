@@ -33,11 +33,14 @@ export default async function ChatPage({
   const activeWorkspace =
     workspaces.find((w) => w.slug === searchParams.workspace) ?? workspaces[0];
 
-  // Threads for the active workspace, newest first.
+  // Threads for the active workspace, newest first. Archived threads are
+  // excluded here — the client fetches them separately via the API when the
+  // user toggles "View archived chats".
   const { data: threadRows } = await supabase
     .from("chat_threads")
-    .select("id, workspace_id, created_by, title, model, system_prompt, created_at, updated_at")
+    .select("id, workspace_id, created_by, title, model, system_prompt, archived_at, created_at, updated_at")
     .eq("workspace_id", activeWorkspace.id)
+    .is("archived_at", null)
     .order("updated_at", { ascending: false })
     .limit(50);
 
@@ -73,6 +76,7 @@ export default async function ChatPage({
               <Link href="/dashboard" className="hover:text-slate-900">Workspaces</Link>
               <Link href="/dashboard/chat" className="font-medium text-slate-900">Chat</Link>
               <Link href="/dashboard/case-files" className="hover:text-slate-900">Case Files</Link>
+              <Link href="/dashboard/files" className="hover:text-slate-900">Files</Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

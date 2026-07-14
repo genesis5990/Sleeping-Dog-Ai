@@ -42,8 +42,25 @@ export interface ChatThread {
   title: string;
   model: string | null;
   system_prompt: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface GeneratedFile {
+  id: string;
+  workspace_id: string;
+  thread_id: string | null;
+  message_id: string | null;
+  created_by: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  storage_path: string;
+  source: "auto_detected" | "manual";
+  language: string | null;
+  linked_document_id: string | null;
+  created_at: string;
 }
 
 export interface ChatMessage {

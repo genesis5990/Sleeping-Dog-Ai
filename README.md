@@ -10,9 +10,10 @@ Built with **Next.js 14 (App Router) · TypeScript · Tailwind · Supabase · Ru
 - **Auth** — magic link + Google OAuth via Supabase (`/login`, `/auth/callback`)
 - **Onboarding** — workspace creation (`/onboarding`)
 - **Dashboard** — workspace list + chat entry point (`/dashboard`)
-- **Chat** — streaming chat against a RunPod vLLM serverless endpoint (`/dashboard/chat`)
+- **Chat** — streaming chat against a RunPod vLLM serverless endpoint, with thread archive/delete and per-message file saving (`/dashboard/chat`)
 - **Case Files (RAG)** — upload documents per workspace, retrieved automatically into chat context (`/dashboard/case-files`)
-- **Postgres + RLS** — `profiles`, `workspaces`, `workspace_members`, `chat_threads`, `chat_messages`, `documents`, `document_chunks`, all workspace-scoped
+- **Files** — code/text saved from chat (auto-detected code blocks or manual saves), downloadable and optionally linkable into Case Files (`/dashboard/files`)
+- **Postgres + RLS** — `profiles`, `workspaces`, `workspace_members`, `chat_threads`, `chat_messages`, `documents`, `document_chunks`, `generated_files`, all workspace-scoped
 
 ## Local development
 
@@ -69,6 +70,7 @@ Migrations applied to Supabase project `kvwabkhnhskzzibddslw`:
 - `chat_threads_and_messages` — chat tables, workspace-scoped via `is_workspace_member()` / `is_workspace_admin()`
 - `case_files_documents_and_chunks` — `documents` + `document_chunks` (pgvector, HNSW cosine index), RLS via the same `is_workspace_member()` / `is_workspace_admin()` helpers, plus the `match_document_chunks()` RPC used for retrieval
 - `case_files_harden_function_search_path` — pins `search_path` on the new functions per the Supabase security linter
+- `chat_archive_and_generated_files` — adds `chat_threads.archived_at`, the `generated_files` table, and a private `generated-files` Storage bucket with workspace-scoped RLS on `storage.objects`
 
 ## Case Files (RAG)
 
@@ -77,6 +79,14 @@ Documents uploaded at `/dashboard/case-files` are chunked, embedded via the RunP
 Supported source file types today: `.eml` (parsed with `mailparser`), `.pdf` (parsed with `pdf-parse` v2), `.txt`, `.csv`. Extend `lib/rag/extract.ts` to add more (e.g. `.docx`, `.xlsx` for OneDrive files).
 
 The embedding endpoint is a **separate RunPod serverless endpoint** from the chat endpoint — point it at an embedding model (default assumes `BAAI/bge-large-en-v1.5`, 1024 dimensions) served via an OpenAI-compatible `/v1/embeddings` route (vLLM, Infinity, or TEI all work). If you use a model with a different output dimension, update `EMBEDDING_DIMENSIONS` in `lib/embeddings.ts` and the `vector(1024)` column type in the migration to match.
+
+## Chat archiving and deletion
+
+Threads can be archived (`archived_at` set) or permanently deleted. Archiving is reversible and hides a thread from the default sidebar list without touching its messages; deletion is permanent and cascades to `chat_messages`. Both actions are exposed as hover controls on each thread row in `/dashboard/chat`, and a "View archived chats" toggle switches the sidebar to the archived list. RLS policy `chat_threads: delete if creator or admin` governs who may hard-delete.
+
+## Files (saved chat output)
+
+Any assistant message can be saved as a file from `/dashboard/chat` — fenced code blocks are auto-detected with a "Save" button per block, and a "Save whole message" option covers everything else. Saved files land in `/dashboard/files`, backed by a private Supabase Storage bucket (`generated-files`) plus the `generated_files` metadata table. From there, a file can be downloaded (10-minute signed URL) or promoted to Case Files ("Use as chat context") — which re-runs the same `lib/rag/ingest.ts` pipeline used for uploads, so a saved file becomes retrievable RAG context in future chats without re-uploading it.
 
 ## Architecture notes
 
