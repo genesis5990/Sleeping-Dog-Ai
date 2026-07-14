@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
+    "geist": "^1.7.2",
     "mailparser": "^3.9.14",
     "next": "^14.2.33",
     "pdf-parse": "^2.4.5",

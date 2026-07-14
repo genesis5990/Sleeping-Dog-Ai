@@ -3,22 +3,35 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #0a0a0d;
+  --foreground: #e6e4df;
 }
 
 html, body { background: var(--background); color: var(--foreground); }
 body { -webkit-font-smoothing: antialiased; }
 
-/* Subtle radial backdrop for hero */
+/* Marketing-site-only surfaces — the dashboard/chat pages keep their own
+   light-mode classes untouched, these selectors are scoped to app/page.tsx
+   sections via the .marketing-* wrapper classes below. */
+
+/* Subtle warm glow behind the hero, evoking a dim terminal/infra dashboard. */
 .hero-bg {
   background:
-    radial-gradient(60% 60% at 50% 0%, rgba(99,102,241,0.10) 0%, rgba(99,102,241,0) 60%),
-    radial-gradient(40% 40% at 90% 10%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 60%),
-    #ffffff;
+    radial-gradient(55% 55% at 50% 0%, rgba(245,158,11,0.10) 0%, rgba(245,158,11,0) 60%),
+    radial-gradient(35% 35% at 90% 15%, rgba(245,158,11,0.05) 0%, rgba(245,158,11,0) 60%),
+    #0a0a0d;
 }
 
 .dotted-grid {
-  background-image: radial-gradient(rgba(15,23,42,0.08) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(230,228,223,0.08) 1px, transparent 1px);
   background-size: 22px 22px;
+}
+
+/* Small pulsing dot for "live/online" endpoint status indicators. */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.status-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }
