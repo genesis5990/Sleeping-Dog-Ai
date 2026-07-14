@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { streamChatCompletion, type RunpodChatMessage } from "@/lib/runpod";
 import type { ChatMessage } from "@/lib/supabase/types";
+import { retrieveRelevantChunks, formatContextBlock } from "@/lib/rag/retrieve";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,6 +74,17 @@ export async function POST(req: NextRequest) {
   if (thread.system_prompt) {
     messages.push({ role: "system", content: thread.system_prompt as string });
   }
+
+  // RAG: retrieve Case Files chunks relevant to the latest user message and
+  // inject them as an extra system message. Failure here is non-fatal —
+  // retrieveRelevantChunks swallows its own errors and returns [] so chat
+  // keeps working even if the embedding endpoint is down.
+  const retrievedChunks = await retrieveRelevantChunks(supabase, workspaceId, body.content);
+  const contextBlock = formatContextBlock(retrievedChunks);
+  if (contextBlock) {
+    messages.push({ role: "system", content: contextBlock });
+  }
+
   for (const m of (history as Pick<ChatMessage, "role" | "content">[]) ?? []) {
     if (m.role === "user" || m.role === "assistant" || m.role === "system" || m.role === "tool") {
       messages.push({ role: m.role, content: m.content });
@@ -179,6 +191,11 @@ export async function POST(req: NextRequest) {
             prompt_tokens: promptTokens,
             completion_tokens: completionTokens,
             model: modelUsed,
+            sources: retrievedChunks.map((c) => ({
+              filename: c.filename,
+              similarity: c.similarity,
+              document_id: c.documentId,
+            })),
           }),
         ),
       );

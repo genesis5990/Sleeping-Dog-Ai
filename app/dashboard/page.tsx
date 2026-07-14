@@ -40,6 +40,7 @@ export default async function DashboardPage() {
             <nav className="hidden gap-4 text-sm md:flex">
               <Link href="/dashboard" className="font-medium text-slate-900">Workspaces</Link>
               <Link href="/dashboard/chat" className="text-slate-600 hover:text-slate-900">Chat</Link>
+              <Link href="/dashboard/case-files" className="text-slate-600 hover:text-slate-900">Case Files</Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

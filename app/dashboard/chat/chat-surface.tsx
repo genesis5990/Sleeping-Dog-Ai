@@ -6,11 +6,17 @@ import Link from "next/link";
 import type { ChatThread, Workspace } from "@/lib/supabase/types";
 
 type UiRole = "user" | "assistant" | "system" | "tool";
+interface UiSource {
+  filename: string;
+  similarity: number;
+  document_id: string;
+}
 interface UiMessage {
   id: string;
   role: UiRole;
   content: string;
   pending?: boolean;
+  sources?: UiSource[];
 }
 
 export function ChatSurface({
@@ -137,7 +143,9 @@ export function ChatSurface({
           } else if (event === "done") {
             setMessages((prev) =>
               prev.map((m) =>
-                m.id === assistantMessage.id ? { ...m, pending: false } : m,
+                m.id === assistantMessage.id
+                  ? { ...m, pending: false, sources: json?.sources ?? [] }
+                  : m,
               ),
             );
           }
@@ -252,7 +260,7 @@ export function ChatSurface({
                 )}
 
                 {messages.map((m) => (
-                  <div key={m.id} className={"flex " + (m.role === "user" ? "justify-end" : "justify-start")}>
+                  <div key={m.id} className={"flex flex-col " + (m.role === "user" ? "items-end" : "items-start")}>
                     <div
                       className={
                         "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm " +
@@ -263,6 +271,20 @@ export function ChatSurface({
                     >
                       {m.content || (m.pending ? <span className="inline-flex gap-1"><Dot /><Dot delay={0.15} /><Dot delay={0.3} /></span> : "")}
                     </div>
+                    {m.sources && m.sources.length > 0 && (
+                      <div className="mt-1.5 flex max-w-[85%] flex-wrap gap-1.5">
+                        {m.sources.map((s, i) => (
+                          <Link
+                            key={`${m.id}-src-${i}`}
+                            href="/dashboard/case-files"
+                            title={`similarity ${s.similarity.toFixed(2)}`}
+                            className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-600 hover:border-brand-200 hover:text-brand-700"
+                          >
+                            [{i + 1}] {s.filename}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
