@@ -2,12 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/logo";
-import { CaseFilesPanel } from "./case-files-panel";
+import { FilesPanel } from "./files-panel";
 import type { Workspace } from "@/lib/supabase/types";
 
-export const metadata = { title: "Case Files · Sleeping Dog Ai" };
+export const metadata = { title: "Files · Sleeping Dog Ai" };
 
-export default async function CaseFilesPage({
+export default async function FilesPage({
   searchParams,
 }: {
   searchParams: { workspace?: string };
@@ -16,7 +16,7 @@ export default async function CaseFilesPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/dashboard/case-files");
+  if (!user) redirect("/login?next=/dashboard/files");
 
   const { data: memberships } = await supabase
     .from("workspace_members")
@@ -32,9 +32,9 @@ export default async function CaseFilesPage({
   const activeWorkspace =
     workspaces.find((w) => w.slug === searchParams.workspace) ?? workspaces[0];
 
-  const { data: documents } = await supabase
-    .from("documents")
-    .select("id, filename, source_type, mime_type, size_bytes, status, error_message, chunk_count, created_at")
+  const { data: files } = await supabase
+    .from("generated_files")
+    .select("id, filename, mime_type, size_bytes, source, language, thread_id, linked_document_id, created_at")
     .eq("workspace_id", activeWorkspace.id)
     .order("created_at", { ascending: false });
 
@@ -47,8 +47,8 @@ export default async function CaseFilesPage({
             <nav className="hidden gap-4 text-sm text-slate-600 md:flex">
               <Link href="/dashboard" className="hover:text-slate-900">Workspaces</Link>
               <Link href="/dashboard/chat" className="hover:text-slate-900">Chat</Link>
-              <Link href="/dashboard/case-files" className="font-medium text-slate-900">Case Files</Link>
-              <Link href="/dashboard/files" className="hover:text-slate-900">Files</Link>
+              <Link href="/dashboard/case-files" className="hover:text-slate-900">Case Files</Link>
+              <Link href="/dashboard/files" className="font-medium text-slate-900">Files</Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">
@@ -62,10 +62,10 @@ export default async function CaseFilesPage({
         </div>
       </header>
 
-      <CaseFilesPanel
+      <FilesPanel
         workspaces={workspaces}
         activeWorkspace={activeWorkspace}
-        initialDocuments={documents ?? []}
+        initialFiles={files ?? []}
       />
     </div>
   );

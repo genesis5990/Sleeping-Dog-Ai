@@ -90,8 +90,13 @@ export async function extractText(
     return { ...extracted, sourceType: "attachment" };
   }
 
+  // text/* covers plain text, code, and markdown. A small allowlist of
+  // non-"text/" mime types covers generated code files (JSON, SQL) that are
+  // still safe to treat as UTF-8 text.
+  const TEXTLIKE_MIME_TYPES = new Set(["application/json", "application/sql"]);
   if (
     mimeType?.startsWith("text/") ||
+    (mimeType && TEXTLIKE_MIME_TYPES.has(mimeType)) ||
     filename.toLowerCase().endsWith(".txt") ||
     filename.toLowerCase().endsWith(".csv")
   ) {
